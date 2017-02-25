@@ -1,8 +1,15 @@
 spring:
   application:
-    name: sample
+    name: sample-client
   cloud:
     config:
       discovery:
         enabled: true
-      failFast: true
+        serviceId: config-server
+        failFast: true
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+  instance:
+        preferIpAddress: true

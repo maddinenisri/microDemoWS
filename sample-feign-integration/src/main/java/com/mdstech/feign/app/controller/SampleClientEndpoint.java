@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 /**
  * Created by Srini on 2/24/17.
  */
-@FeignClient("sample")
+@FeignClient("sample-client")
 public interface SampleClientEndpoint {
 
     @RequestMapping("/message")

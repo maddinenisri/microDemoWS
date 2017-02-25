@@ -1,0 +1,87 @@
+version: '2'
+services:
+  sample-service-registry:
+    container_name: sample-service-registry
+    image: com.mdstech.microservices.demo/sample-service-registry:1.0-SNAPSHOT
+    expose:
+      - 8761
+    ports:
+      - 8761:8761  
+    networks:
+      - my-sample-network
+    volumes:
+      - sample-volume:/var/lib/sample/sample-service-registry
+    logging:
+      driver: json-file
+  config-server:
+    container_name: config-server
+    image: com.mdstech.microservices.demo/config-server:1.0-SNAPSHOT
+    environment:
+      EUREKA_URI: http://sample-service-registry:8761/eureka
+    expose:
+      - 8888
+    ports:
+      - 8888:8888
+    networks:
+      - my-sample-network
+    links:
+      - sample-service-registry:sample-service-registry
+    depends_on:
+      - sample-service-registry
+    volumes:
+      - sample-volume:/var/lib/sample/config-server
+    logging:
+      driver: json-file
+  sample-client:
+    container_name: sample-client
+    image: com.mdstech.microservices.demo/sample-client:1.0-SNAPSHOT
+    environment:
+      EUREKA_URI: http://sample-service-registry:8761/eureka
+    expose:
+      - 8081
+    ports:
+      - 8081:8081
+    networks:
+      - my-sample-network
+    links:
+      - sample-service-registry:sample-service-registry
+      - config-server:config-server
+    depends_on:
+      - sample-service-registry
+      - config-server
+    volumes:
+      - sample-volume:/var/lib/sample/sample-client
+    logging:
+      driver: json-file
+  sample-feign-integration:
+    container_name: sample-feign-integration
+    image: com.mdstech.microservices.demo/sample-feign-integration:1.0-SNAPSHOT
+    environment:
+      EUREKA_URI: http://sample-service-registry:8761/eureka
+    expose:
+      - 9090
+    ports:
+      - 9090:9090
+    networks:
+      - my-sample-network
+    links:
+      - sample-service-registry:sample-service-registry
+      - config-server:config-server
+      - sample-client:sample-client
+    depends_on:
+      - sample-service-registry
+      - config-server
+      - sample-client
+    volumes:
+      - sample-volume:/var/lib/sample/sample-feign-integration
+    logging:
+      driver: json-file
+
+networks:
+  my-sample-network:
+    driver: bridge
+
+volumes:
+  sample-volume:
+    external: true
+
