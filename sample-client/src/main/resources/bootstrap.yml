@@ -3,4 +3,6 @@ spring:
     name: sample
   cloud:
     config:
-      uri: http://localhost:8888
+      discovery:
+        enabled: true
+      failFast: true
