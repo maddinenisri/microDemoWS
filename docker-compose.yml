@@ -12,7 +12,6 @@ services:
       - sample-volume:/var/lib/sample/zookeeper
     logging:
       driver: json-file
-
   kafka:
     image: wurstmeister/kafka:0.9.0.0-1
     expose:
@@ -21,6 +20,8 @@ services:
       - "9092:9092"
     links:
       - zookeeper:zk
+    depends_on:
+      - zookeeper
     environment:
       - KAFKA_ADVERTISED_HOST_NAME
       - KAFKA_ADVERTISED_PORT=9092
@@ -37,7 +38,6 @@ services:
       - sample-volume:/var/lib/sample/kafka
     logging:
       driver: json-file
-
   kafka-manager:
     image: sheepkiller/kafka-manager:latest
     expose:
@@ -45,6 +45,9 @@ services:
     ports:
       - "9000:9000"
     links:
+      - zookeeper
+      - kafka
+    depends_on:
       - zookeeper
       - kafka
     environment:
@@ -57,7 +60,6 @@ services:
       - sample-volume:/var/lib/sample/kafka-manager
     logging:
       driver: json-file
-
   sample-service-registry:
     container_name: sample-service-registry
     image: com.mdstech.microservices.demo/sample-service-registry:1.0-SNAPSHOT
@@ -80,6 +82,7 @@ services:
       - 8888
     ports:
       - 8888:8888
+    entrypoint: /wait-for-it.sh sample-service-registry:8761 -- java -Djava.security.egd=file:/dev/./urandom -jar /app.jar
     networks:
       - my-sample-network
     links:
