@@ -1,0 +1,7 @@
+service:
+  kafka:
+    host: 192.168.99.100
+    port: 9092
+    topic: test
+    groupId: 1
+    offset: earliest
