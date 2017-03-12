@@ -1,0 +1,88 @@
+buildscript {
+    ext {
+        springBootVersion = '1.5.1.RELEASE'
+        axonVersion = '3.0'
+        kafkaVersion = '0.10.1.0'
+        camelVersion = '2.18.2'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath('io.spring.gradle:dependency-management-plugin:0.5.4.RELEASE')
+        classpath('se.transmode.gradle:gradle-docker:1.2')
+    }
+}
+
+group 'com.mdstech.microservices.demo'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'idea'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'docker'
+
+jar {
+    baseName = 'sample-kafka-camel-service'
+    version = '0.0.1-SNAPSHOT'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile('org.springframework.boot:spring-boot-starter-actuator') {
+        exclude module: 'log4j'
+        exclude module: 'slf4j-log4j12'
+    }
+    compile('org.springframework.boot:spring-boot-starter-web') {
+        exclude module: 'log4j'
+        exclude module: 'slf4j-log4j12'
+    }
+    compile("org.apache.kafka:kafka_2.11:${kafkaVersion}"){
+        exclude module: 'log4j'
+        exclude module: 'slf4j-log4j12'
+    }
+    compile("org.apache.camel:camel-core:${camelVersion}"){
+        exclude module: 'log4j'
+        exclude module: 'slf4j-log4j12'
+    }
+    compile("org.apache.camel:camel-spring-boot:${camelVersion}"){
+        exclude module: 'log4j'
+        exclude module: 'slf4j-log4j12'
+    }
+    compile("org.apache.camel:camel-kafka:${camelVersion}"){
+        exclude module: 'log4j'
+        exclude module: 'slf4j-log4j12'
+    }
+    compile("org.apache.camel:camel-parent:${camelVersion}"){
+        exclude module: 'log4j'
+        exclude module: 'slf4j-log4j12'
+    }
+    compile group: 'com.netflix.archaius', name: 'archaius-core', version: '2.0.0-rc.7'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:Camden.SR5"
+    }
+}
+
+task buildDocker(type: Docker, dependsOn: build) {
+    push = false
+    applicationName = jar.baseName
+    dockerfile = file('src/main/docker/Dockerfile')
+    addFile('src/main/docker/wait-for-it.sh', '/')
+    doFirst {
+        copy {
+            from jar
+            into stageDir
+        }
+    }
+}
