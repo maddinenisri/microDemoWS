@@ -1,0 +1,14 @@
+service:
+  kafka:
+    host: kafka
+    port: 9092
+    topic: test
+    groupId: 1
+    offset: earliest
+spring:
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: kafka:9092
+          zkNodes: kafka-zk
