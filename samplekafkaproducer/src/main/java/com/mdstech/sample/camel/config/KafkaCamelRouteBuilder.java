@@ -20,12 +20,25 @@ public class KafkaCamelRouteBuilder extends RouteBuilder {
     @Produce(uri = "direct:start")
     private ProducerTemplate template;
 
-    @Autowired
-    Endpoint testEndPoint;
+    @Value("${service.kafka.host}")
+    private String kafkaHost;
+
+    @Value("${service.kafka.port}")
+    private String kafkaPort;
+
+    @Value("${service.kafka.topic}")
+    private String kafkaTopic;
+
+    @Value("${spring.cloud.stream.kafka.binder.zkNodes}")
+    private String zkHost;
+
+    @Value("${spring.cloud.stream.kafka.binder.brokers}")
+    private String brokers;
 
     @Override
     public void configure() throws Exception {
 
+        String endpoint = String.format("kafka:%s:%s?topic=%s", kafkaHost, kafkaPort, kafkaTopic);
         from("direct:start").process(new Processor() {
             @Override
             public void process(Exchange exchange) throws Exception {
@@ -35,7 +48,7 @@ public class KafkaCamelRouteBuilder extends RouteBuilder {
                 exchange.getIn().setHeader(KafkaConstants.KEY, "1");
                 LOGGER.info("------------------- END OF RECEIVED MESSAGE ---------------");
             }
-        }).to(testEndPoint);
+        }).to(endpoint);
 //        from(testEndPoint)
 //                .process(exchange -> {
 //                    System.out.println("Received Message");
